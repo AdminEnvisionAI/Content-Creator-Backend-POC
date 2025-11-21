@@ -1,0 +1,65 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.pdb
+*.egg-info/
+*.eggs/
+dist/
+build/
+eggs/
+*.log
+
+# Virtual Environment
+venv/
+env/
+.venv/
+.env/
+
+# FastAPI specific
+*.db
+*.sqlite3
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Mypy
+.mypy_cache/
+
+# Coverage reports
+.coverage
+.coverage.*
+
+# pytest
+.cache/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Django
+*.log
+
+# Flask
+instance/
+.pytest_cache/
+
+# macOS
+.DS_Store
+.env
+catboost_info/*.tsv
+catboost_info/*.json
+catboost_info/*/.tfevents
+*.tfevents
+
+uploads/
+public/
+.env.local
+.env.prod
+facebook.py
