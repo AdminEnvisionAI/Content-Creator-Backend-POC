@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 load_dotenv()
 from motor.motor_asyncio import AsyncIOMotorClient
+import certifi
 from beanie import init_beanie, Document
 from models.influencer import InfluencerProfile
 from routes.influencer import router
@@ -50,11 +51,11 @@ async def startup_event():
     Initialize MongoDB + Beanie at startup.
     """
     try:
-        client = AsyncIOMotorClient(MONGODB_URL)
+        client = AsyncIOMotorClient(MONGODB_URL, tls=True, tlsCAFile=certifi.where())
+
         db = client[MONGODB_NAME]
         print("✅ MongoDB Connected!")
 
-        # Load dynamic Beanie Models OR fallback to InfluencerModel
         try:
             models = await load_beanie_models()
             if not models:
