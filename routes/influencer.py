@@ -2,11 +2,12 @@ from fastapi import APIRouter, HTTPException
 from models.influencer import InfluencerProfile
 from schemas.channel import ChannelFetchPayload, InfluencerCategoryPayload,InstagramPayload
 from utils.youtube import fetch_youtube_channels_by_category,fetch_youtube_channel_by_name
-from utils.instagram import process_instagram_profile
+from utils.instagram import process_instagram_profile,run_full_authenticated_flow
 # from utils.facebook import process_facebook_profile
 from utils.twitter import get_twitter_insights
-from controller.influencer import get_one_user_profile_data_controller,get_top_engagemnet_rate_users_controller,get_influencers_from_llm,add_user_controller,login_controller,get_user_stats_controller,get_one_user_profile_data_creatorId_controller
+from controller.influencer import get_one_user_profile_data_controller,get_top_engagemnet_rate_users_controller,get_influencers_from_llm,add_user_controller,login_controller,get_user_stats_controller,get_one_user_profile_data_creatorId_controller,download_insta_reel_controller,exchange_code_controller
 from typing import List, Dict, Optional
+from fastapi.responses import RedirectResponse
 router = APIRouter()
 
 @router.post("/fetch-influencer-youtube-channel-name")
@@ -32,6 +33,13 @@ async def fetch_and_store_influencer(payload: InstagramPayload):
  
     return {"message": "stored", "data": data}
 
+
+
+@router.post("/fetch-influencer-instagram-igId")
+async def fetch_and_store_influencer(payload: InstagramPayload):
+    data = await run_full_authenticated_flow(payload.posts_limit)
+ 
+    return {"message": "stored", "data": data}
 
 # @router.post("/fetch-influencer-facebook")
 # async def fetch_and_store_influencer(payload: InfluencerCategoryPayload):
@@ -90,3 +98,20 @@ async def login(request: Dict):
 async def get_user_stats():
     data = await get_user_stats_controller()
     return {"message": "stored","data": data}
+
+
+
+@router.post("/download_insta_reel")
+async def download_insta_reel():
+    data = await download_insta_reel_controller()
+    return {"message": "stored","data": data}
+
+
+
+@router.get("/exchange_code")
+async def exchange_code(code: str,state: str):
+    print("code-------->",code)
+    print("state------->aaaaa",state)
+    data = await exchange_code_controller(code,state)
+    frontend_url = "http://localhost:3000/#/dashboard?success=true"
+    return RedirectResponse(url=frontend_url)

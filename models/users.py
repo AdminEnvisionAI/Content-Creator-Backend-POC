@@ -42,7 +42,8 @@ class User(Document):
     target_audience: Optional[str] = None
     campaign_types: List[str] = Field(default_factory=list)
     budget_range: Optional[str] = None
-
+    isFBGraphConnected: Optional[bool] = False
+    fb_access_token: Optional[str] = None
     # Status
     isDeleted: bool = False
     isBlocked: bool = False

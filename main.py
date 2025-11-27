@@ -10,15 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Influencer Rank API")
 # CORS Middleware
 origins = [
-    "https://teachologyai.com",
-    "http://teachologyai.com",
-    "https://www.teachologyai.com",
-    "http://www.teachologyai.com",
-    "http://stage.teachologyai.com",
-    "https://stage.teachologyai.com",
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://aistudio.google.com"
+    "*"
     ]
 
 app.add_middleware(

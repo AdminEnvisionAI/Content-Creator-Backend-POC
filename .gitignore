@@ -63,3 +63,4 @@ public/
 .env.local
 .env.prod
 facebook.py
+mcp_server.py

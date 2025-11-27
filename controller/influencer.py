@@ -9,6 +9,9 @@ from utils.mcp_client import llm_filter_mongo,llm_select_keys,llm_get_matching_i
 import json
 from utils.auth import hash_password,verify_password, create_access_token
 from fastapi import HTTPException
+import os
+import httpx
+from utils.dbOperations import delete_many, delete_one, distinct, find,find_one, findWithSort, update_many,create, update_one
 async def get_one_user_profile_data_controller(request:Dict):
     try:
         data=await InfluencerProfile.aggregate([
@@ -29,6 +32,7 @@ async def get_one_user_profile_data_creatorId_controller(request:Dict):
         data=await InfluencerProfile.aggregate([
                 {"$match":{"creatorId": ObjectId(request["creatorId"]),"platform":request["platform"]}},
                 {"$addFields": {"_id": {"$toString": "$_id"}}},
+                {"$addFields": {"creatorId": {"$toString": "$creatorId"}}},
             ]).to_list()
         return data
         
@@ -112,12 +116,14 @@ async def get_influencers_from_llm(user_query: str):
         
     },
      {"$addFields": {"_id": {"$toString": "$_id"}}},
+     {"$addFields": {"creatorId": {"$toString": "$creatorId"}}},
 ]).to_list()
         print("real_data------->",real_data)
 
         return real_data
         
     except Exception as e:
+        print("error=-------------------->",e)
         raise ValueError("update_question_genrator_user_answers have someting error.")
     
 
@@ -167,7 +173,8 @@ async def login_controller(request: dict):
             "user": {
                 "id": str(user.id),
                 "email": user.email,
-                "user_type": user.user_type
+                "user_type": user.user_type,
+                "isFBGraphConnected":user.isFBGraphConnected
             }
         }
 
@@ -188,3 +195,91 @@ async def get_user_stats_controller():
         }
     except Exception as e:
         return {"error": str(e)}    
+    
+
+
+
+# import whisper
+
+# model = whisper.load_model("small")  # free model
+# result = model.transcribe("public/reels/DRehAjYk4FZ.mp4")
+# print(result["text"])
+
+
+
+async def download_insta_reel_controller():
+    import os
+    from pathlib import Path
+    from yt_dlp import YoutubeDL
+
+    # Path of current file (controllers/download_insta_reel_controller.py)
+    script_dir = Path(__file__).parent
+
+    # Move to project root (one level up)
+    project_root = script_dir.parent
+
+    # public/reels path
+    target_dir = project_root / "public" / "reels"
+
+    # Create folder if not exists
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"Saving reel to: {target_dir}")
+
+    url = "https://www.instagram.com/reel/DRehAjYk4FZ/"
+
+    # Save output exactly in public/reels
+    output_template = str(target_dir / "%(id)s.%(ext)s")
+
+    ydl_opts = {
+        "outtmpl": output_template,              # Save video file in public/reels
+        "format": "bestvideo+bestaudio/best",    # Merge audio + video
+        "merge_output_format": "mp4"
+    }
+
+    with YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+    return {
+        "message": "Reel downloaded successfully!",
+        "file_path": str(target_dir)
+    }
+
+
+
+async def exchange_code_controller(code: str,state: str):
+    print("state------->",state)
+    token_url = "https://graph.facebook.com/v24.0/oauth/access_token"
+    params = {
+        "client_id": os.getenv("FB_APP_ID"),
+        "redirect_uri": os.getenv("REDIRECT_URI"),
+        "client_secret": os.getenv("FB_APP_SECRET"),
+        "code": code,
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(token_url, params=params)
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to exchange code for token")
+
+    data = response.json()
+    access_token = data.get("access_token")
+    data=await update_one(
+       User,
+      {
+      
+        "_id": ObjectId(state)
+       },
+      {
+        "$set": {
+            "fb_access_token":access_token,
+            "isFBGraphConnected": True
+        }
+      }
+      )
+    print("access_token------------->",access_token)
+    if not access_token:
+        raise HTTPException(status_code=400, detail="Access token not found")
+
+    return {"access_token": access_token}

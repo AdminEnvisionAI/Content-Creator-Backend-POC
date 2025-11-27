@@ -5,9 +5,9 @@ import os
 import json
 from bson import json_util 
 
-genai.configure(api_key="AIzaSyDwmaaQCRpAalCZO9okbXreHqddNPy2GwQ")
-GEMINI_MODEL = "gemini-2.0-flash-lite"
-gemini_model = genai.GenerativeModel("gemini-2.0-flash-lite") # Using a more recent model
+genai.configure(os.getenv("GEMINI_API_KEY"))
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
+gemini_model = genai.GenerativeModel(GEMINI_MODEL) # Using a more recent model
 
 
 def llm_filter_mongo(mongo_data: dict,user_query:str) -> dict:
