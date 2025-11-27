@@ -5,7 +5,7 @@ import os
 import json
 from bson import json_util 
 
-genai.configure(os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 GEMINI_MODEL = os.getenv("GEMINI_MODEL")
 gemini_model = genai.GenerativeModel(GEMINI_MODEL) # Using a more recent model
 
